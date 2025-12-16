@@ -1,0 +1,466 @@
+options:
+  parameters:
+    author: Zach Leffke, KJ4QLP
+    category: '[KJ4QLP Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: Hierarchical GMSK AX.25 Receiver
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: hb
+    hier_block_src_path: '.:'
+    id: ax25_gmsk_rx_hier
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: 9600 Baud GMSK RX
+    window_size: 1400,500
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: baud
+  id: variable
+  parameters:
+    comment: ''
+    value: '9600'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [976, 84]
+    rotation: 0
+    state: enabled
+- name: decim
+  id: variable
+  parameters:
+    comment: ''
+    value: int(samp_rate/2000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [192, 100]
+    rotation: 0
+    state: enabled
+- name: fsk_dev
+  id: variable
+  parameters:
+    comment: ''
+    value: '10000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [800, 116]
+    rotation: 0
+    state: enabled
+- name: interp
+  id: variable
+  parameters:
+    comment: ''
+    value: '24'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [272, 100]
+    rotation: 0
+    state: enabled
+- name: samps_per_symb
+  id: variable
+  parameters:
+    comment: ''
+    value: (samp_rate/decim*interp)/baud
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1056, 84]
+    rotation: 0
+    state: enabled
+- name: analog_agc2_xx_0
+  id: analog_agc2_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    attack_rate: 1e-1
+    comment: automatic gain control
+    decay_rate: 1e-2
+    gain: '1.0'
+    max_gain: '65536'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    reference: '1.0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [392, 156.0]
+    rotation: 0
+    state: enabled
+- name: analog_quadrature_demod_cf_1
+  id: analog_quadrature_demod_cf
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'FSK/GMSK
+
+      demodulator'
+    gain: (samp_rate/decim*interp)/(2*math.pi*fsk_dev/8.0)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [776, 188.0]
+    rotation: 0
+    state: enabled
+- name: digital_binary_slicer_fb_0
+  id: digital_binary_slicer_fb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: soft bits to hard bits
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [240, 328]
+    rotation: 0
+    state: enabled
+- name: digital_clock_recovery_mm_xx_0
+  id: digital_clock_recovery_mm_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: Timing Recovery
+    gain_mu: '0.175'
+    gain_omega: 0.25*0.175*0.175
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mu: '0.25'
+    omega: samps_per_symb*(1+0.0)
+    omega_relative_limit: '0.005'
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [968, 156.0]
+    rotation: 0
+    state: enabled
+- name: digital_descrambler_bb_0
+  id: digital_descrambler_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'G3RUH Polynomial
+
+      1+x^12+x^17'
+    len: '16'
+    mask: '0x21'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    seed: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [392, 308]
+    rotation: 0
+    state: enabled
+- name: low_pass_filter_0
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: narrow signal filter
+    cutoff_freq: lpf_cutoff
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate / decim *interp
+    type: fir_filter_ccf
+    width: lpf_trans
+    win: firdes.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [576, 140.0]
+    rotation: 0
+    state: enabled
+- name: lpf_cutoff
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: LPF Cut Off
+    short_id: ''
+    type: eng_float
+    value: 12.5e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [528, 48]
+    rotation: 0
+    state: enabled
+- name: lpf_trans
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: LPF Trans
+    short_id: ''
+    type: eng_float
+    value: 1e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [640, 48]
+    rotation: 0
+    state: enabled
+- name: pad_sink_0
+  id: pad_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    label: pre-d, 48k
+    num_streams: '1'
+    optional: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [392, 108.0]
+    rotation: 0
+    state: enabled
+- name: pad_sink_0_0
+  id: pad_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    label: agc/filt, 48k
+    num_streams: '1'
+    optional: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [808, 68]
+    rotation: 0
+    state: enabled
+- name: pad_sink_0_0_0
+  id: pad_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Output is KISS Frame
+
+      <FEND><CMD><DATA><FEND>
+
+      DATA = AX.25 Frame'
+    label: kiss/ax25
+    num_streams: '1'
+    optional: 'True'
+    type: message
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1192, 324.0]
+    rotation: 0
+    state: enabled
+- name: pad_source_0
+  id: pad_source
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    label: in
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_streams: '1'
+    optional: 'False'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [64, 188.0]
+    rotation: 0
+    state: enabled
+- name: rational_resampler_xxx_0
+  id: rational_resampler_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: reduce to 48k sample rate
+    decim: decim
+    fbw: ''
+    interp: interp
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    taps: ''
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [200, 164.0]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Sample Rate
+    short_id: ''
+    type: intx
+    value: '250000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [200, 8]
+    rotation: 0
+    state: enabled
+- name: satellites_hdlc_deframer_0
+  id: satellites_hdlc_deframer
+  parameters:
+    affinity: ''
+    alias: ''
+    check_fcs: 'True'
+    comment: 'Searches for flags to detect Frame
+
+      ''unstuffs'' tx bit stuffing
+
+      checks FCS for bit errors'
+    max_length: '300'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [680, 316.0]
+    rotation: 0
+    state: true
+- name: satellites_nrzi_decode_0
+  id: satellites_nrzi_decode
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'NRZI Differential
+
+      Line Decoding'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [536, 328.0]
+    rotation: 0
+    state: true
+- name: satellites_pdu_to_kiss_0
+  id: satellites_pdu_to_kiss
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Wraps AX.25 Frame in KISS protocol
+
+      <FEND><CMD><DATA><FEND>
+
+      Escapes DATA bytes as needed'
+    control_byte: 'True'
+    include_timestamp: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [960, 316.0]
+    rotation: 0
+    state: true
+- name: virtual_sink_0
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: soft_bits
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1192, 188.0]
+    rotation: 0
+    state: enabled
+- name: virtual_source_0
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: soft_bits
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [56, 324]
+    rotation: 0
+    state: enabled
+
+connections:
+- [analog_agc2_xx_0, '0', low_pass_filter_0, '0']
+- [analog_quadrature_demod_cf_1, '0', digital_clock_recovery_mm_xx_0, '0']
+- [digital_binary_slicer_fb_0, '0', digital_descrambler_bb_0, '0']
+- [digital_clock_recovery_mm_xx_0, '0', virtual_sink_0, '0']
+- [digital_descrambler_bb_0, '0', satellites_nrzi_decode_0, '0']
+- [low_pass_filter_0, '0', analog_quadrature_demod_cf_1, '0']
+- [low_pass_filter_0, '0', pad_sink_0_0, '0']
+- [pad_source_0, '0', rational_resampler_xxx_0, '0']
+- [rational_resampler_xxx_0, '0', analog_agc2_xx_0, '0']
+- [rational_resampler_xxx_0, '0', pad_sink_0, '0']
+- [satellites_hdlc_deframer_0, out, satellites_pdu_to_kiss_0, in]
+- [satellites_nrzi_decode_0, '0', satellites_hdlc_deframer_0, '0']
+- [satellites_pdu_to_kiss_0, out, pad_sink_0_0_0, in]
+- [virtual_source_0, '0', digital_binary_slicer_fb_0, '0']
+
+metadata:
+  file_format: 1

@@ -1,0 +1,458 @@
+options:
+  parameters:
+    author: Zach Leffke, KJ4QLP
+    category: '[KJ4QLP Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: Hierarchical AX.25 GMSK Transmitter
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: hb
+    hier_block_src_path: '.:'
+    id: ax25_gmsk_tx_hier
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: 9600 Baud GMSK TX
+    window_size: 1600,500
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: baud
+  id: variable
+  parameters:
+    comment: desired baud rate
+    value: '9600'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [80, 228.0]
+    rotation: 0
+    state: enabled
+- name: decim
+  id: variable
+  parameters:
+    comment: ''
+    value: '24'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [808, 252]
+    rotation: 0
+    state: enabled
+- name: interp
+  id: variable
+  parameters:
+    comment: ''
+    value: '25'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [736, 252]
+    rotation: 0
+    state: enabled
+- name: samp_rate_var
+  id: variable
+  parameters:
+    comment: ''
+    value: samp_rate / interp * decim
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 12]
+    rotation: 0
+    state: enabled
+- name: samps_per_symb
+  id: variable
+  parameters:
+    comment: 'samples per symbol
+
+      (try to make integer)'
+    value: samp_rate_var/baud
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 228.0]
+    rotation: 0
+    state: enabled
+- name: bb_gain
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Baseband Gain
+    short_id: ''
+    type: ''
+    value: '0.75'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [568, 252]
+    rotation: 0
+    state: enabled
+- name: blocks_multiply_const_vxx_0_0
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: Baseband Gain
+    const: bb_gain
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [568, 332]
+    rotation: 0
+    state: enabled
+- name: blocks_pack_k_bits_bb_0
+  id: blocks_pack_k_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "pack bytes for \nGMSK Mod Block"
+    k: '8'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1272, 132]
+    rotation: 0
+    state: enabled
+- name: blocks_pdu_to_tagged_stream_0_0
+  id: blocks_pdu_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tag: packet_len
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [768, 132]
+    rotation: 0
+    state: enabled
+- name: blocks_pdu_to_tagged_stream_1
+  id: blocks_pdu_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tag: packet_len
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [160, 132]
+    rotation: 0
+    state: enabled
+- name: blocks_tag_gate_0
+  id: blocks_tag_gate
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: Block tag propagation
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    propagate_tags: 'False'
+    single_key: '"packet_len"'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [384, 324]
+    rotation: 0
+    state: enabled
+- name: bt
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: BT
+    short_id: ''
+    type: ''
+    value: '.5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [312, 228.0]
+    rotation: 0
+    state: enabled
+- name: digital_gmsk_mod_0
+  id: digital_gmsk_mod
+  parameters:
+    affinity: ''
+    alias: ''
+    bt: bt
+    comment: "expects packed \nbyte stream"
+    log: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_symbol: int(samps_per_symb)
+    verbose: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [208, 324]
+    rotation: 0
+    state: enabled
+- name: digital_scrambler_bb_0
+  id: digital_scrambler_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'G3RUH Polynomial
+
+      1+x^12+x^17'
+    len: '16'
+    mask: '0x21'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    seed: '0x0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [992, 116]
+    rotation: 0
+    state: enabled
+- name: pad_sink_0
+  id: pad_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'AX.25 header is not ASCII printable
+
+      Some characters will not print properly'
+    label: out
+    num_streams: '1'
+    optional: 'True'
+    type: message
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [600, 28]
+    rotation: 0
+    state: enabled
+- name: pad_sink_1
+  id: pad_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    label: out
+    num_streams: '1'
+    optional: 'False'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [936, 332]
+    rotation: 0
+    state: enabled
+- name: pad_source_0
+  id: pad_source
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Expects KISS Frames on input
+
+      <FEND><CMD><DATA><FEND>
+
+      DATA = AX.25 Frame'
+    label: kiss/ax25
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_streams: '1'
+    optional: 'False'
+    type: message
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 132]
+    rotation: 0
+    state: enabled
+- name: rational_resampler_xxx_0
+  id: rational_resampler_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: upsample to 250k for UHD
+    decim: decim
+    fbw: ''
+    interp: interp
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    taps: ''
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [736, 312]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Sample Rate
+    short_id: ''
+    type: ''
+    value: '250000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [200, 12]
+    rotation: 0
+    state: enabled
+- name: satellites_hdlc_framer_0
+  id: satellites_hdlc_framer
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Computes FCS, append
+
+      Bit Stuff Frame
+
+      Append/Prepend Flags'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    postamble_bytes: '64'
+    preamble_bytes: '64'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [568, 124.0]
+    rotation: 0
+    state: true
+- name: satellites_kiss_to_pdu_0
+  id: satellites_kiss_to_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Discard KISS FEND bytes
+
+      Escapes Bytes as necessary
+
+      Removes KISS CMD Byte'
+    control_byte: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [376, 132.0]
+    rotation: 0
+    state: true
+- name: satellites_nrzi_encode_0
+  id: satellites_nrzi_encode
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'NRZI Differential
+
+      Line Encoding'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1128, 136.0]
+    rotation: 0
+    state: true
+- name: virtual_sink_0
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: bytes
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1408, 132]
+    rotation: 0
+    state: enabled
+- name: virtual_source_0_2_0_1
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: bytes
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [48, 332]
+    rotation: 0
+    state: enabled
+
+connections:
+- [blocks_multiply_const_vxx_0_0, '0', rational_resampler_xxx_0, '0']
+- [blocks_pack_k_bits_bb_0, '0', virtual_sink_0, '0']
+- [blocks_pdu_to_tagged_stream_0_0, '0', digital_scrambler_bb_0, '0']
+- [blocks_pdu_to_tagged_stream_1, '0', satellites_kiss_to_pdu_0, '0']
+- [blocks_tag_gate_0, '0', blocks_multiply_const_vxx_0_0, '0']
+- [digital_gmsk_mod_0, '0', blocks_tag_gate_0, '0']
+- [digital_scrambler_bb_0, '0', satellites_nrzi_encode_0, '0']
+- [pad_source_0, out, blocks_pdu_to_tagged_stream_1, pdus]
+- [rational_resampler_xxx_0, '0', pad_sink_1, '0']
+- [satellites_hdlc_framer_0, out, blocks_pdu_to_tagged_stream_0_0, pdus]
+- [satellites_kiss_to_pdu_0, out, pad_sink_0, in]
+- [satellites_kiss_to_pdu_0, out, satellites_hdlc_framer_0, in]
+- [satellites_nrzi_encode_0, '0', blocks_pack_k_bits_bb_0, '0']
+- [virtual_source_0_2_0_1, '0', digital_gmsk_mod_0, '0']
+
+metadata:
+  file_format: 1
